@@ -126,12 +126,12 @@ header a:hover{
 #boxes .box{
     float:left;
     text-align:center;
-    width:30%;
-    padding:10px;
+    width:25%;
+    padding:4%;
 }
 
 #boxes .box img{
-    width:90px;
+    width:120%;
 }
 
 /* Sidebar */
