@@ -77,5 +77,6 @@ elif(EncOrDec=="Decrypt" or EncOrDec=="decrypt"):
     decryptedMessage=(DecryptMessage(cipherText))
     print(decryptedMessage)
 
+ded = input("Type to close window: ")
     
           
