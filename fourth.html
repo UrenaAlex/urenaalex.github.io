@@ -8,45 +8,191 @@
 
 
 <script type="text/processing">
+import processing.pdf.*;
+
+PImage bg; PImage bgR; PImage cat; PImage cat2; PImage costume;
+int x; int cx; int cy; int cVy;
+int numKnives = 7;
+int gameState; PImage knife; int[] kx = new int[numKnives]; int[] ky = new int[numKnives]; int count;
+int score; int highScore; 
+PImage back2;
+
+PImage fireBall; int fx; int fy;
+int fireCount; int bulletCount;
+boolean isShooting; boolean bull;
+
 void setup(){
-size(800,1200);
-background(0);
+  isShooting = true;
+  bull = false;
+  gameState = 0;
+  size(500,720);
+  bg = loadImage("./img/bg.jpg");
+  bgR = loadImage("./img/bg.jpg");
+  cat = loadImage("./img/doug.png");
+  cat2 = loadImage("./img/mCSheri.png");
+  costume = cat;
+  knife = loadImage("./img/Bless.png");
+  fireBall = loadImage("./img/fire.png");
+  back2 = loadImage("./img/Doug.png");
+  cVy = 2;
+  cy = 100;
+  cx = 50;
+  fx = width + 10000;
+  for(int i =0; i < numKnives ; i++){
+    kx[i] = width + (int)random(50, 200) + 200*i;
+    ky[i] = height/2 + (int)random(-200,200);
+  }
+  
 }
-int x = 0;
-int speed = 2;
-int value = 0;
-int acc = 0;
-int s = 0;
-int fc = 0;
 
-void mousePressed(){
-if (mouseX > 140 && mouseX < 640 && mouseY > 55 && mouseY < 115){
-background(0);
-s = 0;
-}
-
-}
 
 void draw(){
-stroke(4);
-fill(90);
-if (mouseX > 140 && mouseX < 640 && mouseY > 55 && mouseY < 115){
-fill(255,55,0);
+
+  count++;
+  move();
+  if(score > highScore){
+        highScore = score;
+  }
+  if(gameState==0){
+  //Background goes on top!  (first!)
+  image(bg, x, 0);
+  image(bgR, x+bg.width-6, 0);
+  image(bg, x+2*bg.width -12, 0);
+  if(x < -(2*bg.width+12)){
+    x=0;
+  } 
+  
+  //SQUID CODE!!
+  for(int i = 0; i<numKnives ; i++){
+    kx[i]-= 2;
+    if(kx[i] < -10){
+      score++;
+      kx[i] = width + (int)random(50, 200);
+      ky[i] = height/2 + (int)random(-200,200);
+    }
+    if(abs((int)((fx+50)-(kx[i]+50))) < 100 && abs((int)((fy+50) - (ky[i]+26))) < 76){
+      kx[i]+=2000;
+      fx = width +20000;
+      score++;
+    }
+    if(abs((int)((cx+35)-(kx[i]+50))) < 85 && abs((int)((cy+58) - (ky[i]+26))) < 84){
+      gameState=1;
+    }
+    image(knife, kx[i], ky[i]);
+  }
+  //FIREBALL CODE
+  image(fireBall, fx, fy);
+  fx += 10;
+  if(fx > width + 20){
+    fx = 20000;
+  } 
+  
+  //CAT CODE!!!
+  image(costume, cx,cy);
+  cy = cy + cVy;
+  if(count%2 ==0){
+    cVy ++;
+  }
+  x--;
+  checkCat();
+  
+  
+ //END GAMESTATE 0 
+ }
+
+  //Mario Dies:
+  if(gameState==1){
+
+    //BEGIN BUTTON
+    textSize(34);   //SIZE OF TEXT
+    text("You died!!!", 100,146);
+    fill(245); 
+    rect(90,160, 240, 45, 10);  //BACKGROUND OF BUTTON
+    fill(0);
+    //END BUTTON
+    
+    //RESTART GAME
+    if(mouseX > 90 && mouseY > 160 && mouseX < 330 && mouseY < 205){
+      if (mousePressed){
+        cy = 100;
+        cVy = 2;
+        cx = 50;
+        score = 0;
+        for(int i =0; i < numKnives ; i++){
+          kx[i] = width + (int)random(50, 200) + 200*i;
+          ky[i] = height/2 + (int)random(-200,200);
+        }
+        gameState=0;             
+      }
+ 
+      else{  //HOVER OVER BUT NOT CLICK
+        fill(255,0,0);
+        rect(90,160, 240, 45, 10);
+        fill(0);
+        text("Play Again?", 100,196);  //TEXT ON BUTTON
+      }
+    }
+    else{
+      text("Click Me!!", 100,196);  //TEXT ON BUTTON
+    }  
+  }
+  
+  //TEXT TO SCREEN
+  fill(0);
+  textSize(18);
+  text("Score: " + score, width -130, 30);
+  text("High Score: " + highScore, width - 130, 50);
+  
 }
-rect(140, 55, 500, 60, 20);
-fill(255);
-textSize(40);
-text("Click this button to reset", 150, 100); 
-fill(random(200),random(255),random(255));
-stroke(4);
-ellipse(mouseX, mouseY, s, s); 
-if (acc %15 == 0 && s < 300){
-s ++;
-}
-acc ++;
+
+
+void move(){
+  if (keyPressed){    
+    if(cx > 0 && keyCode==LEFT){
+      cx-=2;
+    }
+    else if(cx <width/2 && keyCode==RIGHT){
+      cx+=2;
+    }
+  }
 
 }
 
+void keyPressed(){
+  if(key==32){
+    fire();
+  }
+}
+void mousePressed(){
+  if(mouseButton == LEFT){
+    cVy = -11;
+  }
+  else if(mouseButton == RIGHT){
+    fire();
+  }
+  costume = cat2;
+  
+}
+
+void mouseReleased(){
+  costume = cat; 
+}
+void fire(){
+  fx = cx + 20;
+  fy = cy + 45;
+  fireCount++;
+  if(fireCount > 4){
+    isShooting = true;
+  }
+  else{
+    isShooting = false;
+  }
+}
+void checkCat(){
+  if(cy > height || cy < -80){
+    gameState =1;
+  }
+}
 </script>
 
 <canvas id="sketch" style="border: 1px solid black;"></canvas>
